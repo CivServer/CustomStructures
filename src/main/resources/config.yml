@@ -7,6 +7,8 @@ configversion: 9
 #Log extra information in console when generating structures
 debug: false
 
+world: game_world
+
 #bstats is where data is sent. https://bstats.org/plugin/bukkit/CustomStructures .
 #Here is some more information on it like what it collects and how to disable it all together and not just for this plugin.
 # https://bstats.org/getting-started

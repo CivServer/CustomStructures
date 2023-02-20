@@ -2,6 +2,7 @@ package com.ryandw11.structure.listener;
 
 import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.utils.StructurePicker;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -23,6 +24,9 @@ public class ChunkLoad implements Listener {
     @EventHandler
     public void onChunkLoad(ChunkLoadEvent e) {
         if (!CustomStructures.enabled) return;
+
+        World world = e.getWorld();
+        if (!world.getName().equalsIgnoreCase(plugin.getConfig().getString("world"))) return;
 
         // Allow new chunk to be disabled.
         boolean newChunk = plugin.getConfig().contains("new_chunks") && !plugin.getConfig().getBoolean("new_chunks");
