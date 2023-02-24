@@ -1,5 +1,6 @@
 package com.ryandw11.structure.structure.properties;
 
+import com.ryandw11.structure.CustomStructures;
 import com.ryandw11.structure.exceptions.StructureConfigurationException;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -72,7 +73,12 @@ public class BlockLevelLimit {
                 throw new StructureConfigurationException("'BlockLevelLimit.Error' must be greater than 0 and less than 1.");
         }
 
-        assert mode != null;
+        if (this.mode == null) {
+            CustomStructures.plugin.getLogger().info("Issue with mode");
+            mode = "NONE";
+            return;
+        }
+
         if(mode.equalsIgnoreCase("flat_error") && !cs.contains("Error")){
             throw new StructureConfigurationException("The BlockLevelLimit mode 'flat_error' must contain an error setting!");
         }
