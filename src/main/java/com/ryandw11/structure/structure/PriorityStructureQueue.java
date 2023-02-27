@@ -1,6 +1,7 @@
 package com.ryandw11.structure.structure;
 
 import com.ryandw11.structure.structure.properties.StructureYSpawning;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.block.Block;

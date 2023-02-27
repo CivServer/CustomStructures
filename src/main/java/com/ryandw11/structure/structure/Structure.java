@@ -8,6 +8,7 @@ import com.ryandw11.structure.schematic.SchematicHandler;
 import com.ryandw11.structure.structure.properties.*;
 import com.ryandw11.structure.utils.RandomCollection;
 import com.sk89q.worldedit.WorldEditException;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -278,20 +279,20 @@ public class Structure {
         }
 
         // Check to see if the structure is far enough away from spawn.
-        if (Math.abs(block.getX()) < getStructureLocation().getXLimitation())
+        if (Math.abs(block.getX()) < getStructureLocation().getXLimitation()) {
             return false;
-        if (Math.abs(block.getZ()) < getStructureLocation().getZLimitation())
+        }
+        if (Math.abs(block.getZ()) < getStructureLocation().getZLimitation()) {
             return false;
+        }
 
-        if (!CustomStructures.getInstance().getStructureHandler().validDistance(this, block.getLocation()))
+        if (!CustomStructures.getInstance().getStructureHandler().validDistance(this, block.getLocation())) {
             return false;
+        }
 
-        if (!CustomStructures.getInstance().getStructureHandler().validSameDistance(this, block.getLocation()))
+        if (!CustomStructures.getInstance().getStructureHandler().validSameDistance(this, block.getLocation())) {
             return false;
-
-        // Check to see if the structure has the chance to spawn
-        if (ThreadLocalRandom.current().nextInt(0, getProbabilityDenominator() + 1) > getProbabilityNumerator())
-            return false;
+        }
 
         // Check to see if the structure can spawn in the current biome.
         return getStructureLocation().hasBiome(block.getBiome());

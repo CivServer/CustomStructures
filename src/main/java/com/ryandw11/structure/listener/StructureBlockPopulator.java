@@ -29,7 +29,7 @@ public class StructureBlockPopulator extends BlockPopulator {
          */
         try {
             StructurePicker s = new StructurePicker(b, source, CustomStructures.getInstance());
-            s.runTaskTimer(CustomStructures.plugin, 1, 10);
+            s.run();
         } catch (RuntimeException ex) {
             // ignore, error already logged.
         }

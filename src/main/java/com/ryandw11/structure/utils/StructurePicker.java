@@ -29,7 +29,7 @@ import java.util.Objects;
  *
  * @author Ryandw11
  */
-public class StructurePicker extends BukkitRunnable {
+public class StructurePicker {
 
     private final CustomStructures plugin;
 
@@ -57,16 +57,15 @@ public class StructurePicker extends BukkitRunnable {
         priorityStructureQueue = new PriorityStructureQueue(structureHandler.getStructures(), Objects.requireNonNull(bl), ch);
     }
 
-    @Override
     public void run() {
         Structure gStructure = null;
         try {
             if (!priorityStructureQueue.hasNextStructure()) {
-                this.cancel();
                 return;
             }
 
             gStructure = priorityStructureQueue.getNextStructure();
+
             Structure structure = gStructure;
             assert structure != null;
             StructureYSpawning structureSpawnSettings = structure.getStructureLocation().getSpawnSettings();
@@ -99,7 +98,6 @@ public class StructurePicker extends BukkitRunnable {
                 });
 
                 // Cancel the process and return.
-                this.cancel();
                 return;
             }
 
@@ -108,6 +106,7 @@ public class StructurePicker extends BukkitRunnable {
                 for (int i = structureBlock.getY(); i >= 4; i--) {
                     if (!ignoreBlocks.getBlocks().contains(ch.getBlock(8, i, 8).getType()) && !ch.getBlock(8, i, 8).getType().isAir()) {
                         structureBlock = ch.getBlock(8, i, 8);
+                        this.run();
                         break;
                     }
                 }
@@ -118,20 +117,30 @@ public class StructurePicker extends BukkitRunnable {
                 structureBlock = ch.getBlock(8, structureSpawnSettings.getHeight(structureBlock.getLocation()), 8);
             }
 
-            if (!structure.getStructureLimitations().hasWhitelistBlock(structureBlock))
+            if (!structure.getStructureLimitations().hasWhitelistBlock(structureBlock)) {
+                this.run();
                 return;
+            }
 
-            if (structure.getStructureLimitations().hasBlacklistBlock(structureBlock))
+            if (structure.getStructureLimitations().hasBlacklistBlock(structureBlock)) {
+                this.run();
                 return;
+            }
 
             // If it can spawn in water
             if (!structure.getStructureProperties().canSpawnInWater()) {
-                if (structureBlock.getType() == Material.WATER) return;
+                if (structureBlock.getType() == Material.WATER) {
+                    this.run();
+                    return;
+                }
             }
 
             // If the structure can spawn in lava
             if (!structure.getStructureProperties().canSpawnInLavaLakes()) {
-                if (structureBlock.getType() == Material.LAVA) return;
+                if (structureBlock.getType() == Material.LAVA) {
+                    this.run();
+                    return;
+                }
             }
 
             // calculate SpawnY if first is false
@@ -141,10 +150,12 @@ public class StructurePicker extends BukkitRunnable {
 
             // If the structure is going to be cut off by the world height limit, pick a new structure.
             if (structure.getStructureLimitations().getWorldHeightRestriction() != -1 &&
-                    structureBlock.getLocation().getY() > ch.getWorld().getMaxHeight() - structure.getStructureLimitations().getWorldHeightRestriction())
+                    structureBlock.getLocation().getY() > ch.getWorld().getMaxHeight() - structure.getStructureLimitations().getWorldHeightRestriction()) {
+                this.run();
                 return;
+            }
 
-            // If the structure can follows block level limit.
+                // If the structure can follows block level limit.
             // This only triggers if it spawns on the top.
             if (structure.getStructureLimitations().getBlockLevelLimit().isEnabled()) {
                 BlockLevelLimit limit = structure.getStructureLimitations().getBlockLevelLimit();
@@ -175,8 +186,10 @@ public class StructurePicker extends BukkitRunnable {
                         }
                     }
 
-                    if (((double) error / total) > limit.getError())
+                    if (((double) error / total) > limit.getError()) {
+                        this.run();
                         return;
+                    }
                 }
             }
 
@@ -203,8 +216,15 @@ public class StructurePicker extends BukkitRunnable {
             plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                 // It is assumed at this point that the structure has been spawned.
                 // Add it to the list of spawned structures.
+
+                if (!CustomStructures.getInstance().getStructureHandler().validDistance(structure, structureBlock.getLocation())) {
+                    return;
+                }
+
                 plugin.getStructureHandler().putSpawnedStructure(structureBlock.getLocation(),
                         structure);
+
+                plugin.getServer().getLogger().info("Pasted at " + structureBlock.getLocation().getBlockX() + structureBlock.getLocation().getBlockZ());
                 try {
                     SchematicHandler.placeSchematic(structureBlock.getLocation(),
                             structure.getSchematic(),
@@ -215,10 +235,8 @@ public class StructurePicker extends BukkitRunnable {
                 }
             });
 
-            this.cancel();// return after pasting
         } catch (StructureConfigurationException ex) {
 
-            this.cancel();
             if (gStructure != null) {
                 plugin.getLogger().severe("A configuration error was encountered when attempting to spawn the structure: "
                         + gStructure.getName());
@@ -229,7 +247,6 @@ public class StructurePicker extends BukkitRunnable {
 
         } catch (Exception ex) {
 
-            this.cancel();
             plugin.getLogger().severe("An error was encountered during the schematic pasting section.");
             plugin.getLogger().severe("The task was stopped for the safety of your server!");
             plugin.getLogger().severe("For more information enable debug mode.");

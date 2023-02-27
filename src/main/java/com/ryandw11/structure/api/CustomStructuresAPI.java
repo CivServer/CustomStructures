@@ -5,6 +5,9 @@ import com.ryandw11.structure.api.structaddon.CustomStructureAddon;
 import com.ryandw11.structure.loottables.LootTablesHandler;
 import com.ryandw11.structure.loottables.customitems.CustomItemManager;
 import com.ryandw11.structure.structure.StructureHandler;
+import com.ryandw11.structure.utils.StructurePicker;
+import org.bukkit.Chunk;
+import org.bukkit.block.Block;
 
 /**
  * The class for the general API of CustomStructures.
@@ -15,6 +18,7 @@ import com.ryandw11.structure.structure.StructureHandler;
 public class CustomStructuresAPI {
 
     private final CustomStructures plugin;
+    public static StructureSpawnValidator validator;
 
     /**
      * Construct the CustomStructuresAPI class.
@@ -29,6 +33,22 @@ public class CustomStructuresAPI {
             throw new IllegalStateException("CustomStructures has yet to be initialized.");
 
         this.plugin = CustomStructures.plugin;
+    }
+
+    public void loadChunk(Chunk chunk) {
+        Block b = chunk.getBlock(8, 5, 8); //Grabs the block 8, 5, 8 in that chunk.
+
+        /*
+         * Schematic handler
+         * This activity is done async to prevent the server from lagging.
+         */
+        try {
+            StructurePicker s = new StructurePicker(b, chunk, CustomStructures.getInstance());
+            s.run();
+            //s.runTaskTimer(CustomStructures.plugin, 1, 10);
+        } catch (RuntimeException ex) {
+            // ignore, error already logged.
+        }
     }
 
     /**

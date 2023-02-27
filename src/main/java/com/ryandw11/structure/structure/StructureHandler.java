@@ -6,6 +6,7 @@ import com.ryandw11.structure.exceptions.StructureConfigurationException;
 import com.ryandw11.structure.io.StructureDatabaseHandler;
 import com.ryandw11.structure.threading.CheckStructureList;
 import com.ryandw11.structure.utils.Pair;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import java.io.File;
@@ -68,7 +69,7 @@ public class StructureHandler {
 
         checkStructureList = new CheckStructureList(this);
         // Run every 5 minutes.
-        checkStructureList.runTaskTimerAsynchronously(cs, 20, 6000);
+        checkStructureList.runTask(cs);
 
         if (cs.getConfig().getBoolean("logStructures")) {
             structureDatabaseHandler = new StructureDatabaseHandler(cs);
@@ -154,16 +155,23 @@ public class StructureHandler {
      * @return If the distance is valid according to its config.
      */
     public boolean validDistance(Structure struct, Location location) {
+        //Bukkit.getLogger().info("Checking distance for " + struct.getName() + " (" + location.getBlockX() + ", " + location.getBlockZ() + ") (" + struct.getStructureLocation().getDistanceFromOthers() + ")");
+
         double closest = Double.MAX_VALUE;
         synchronized (spawnedStructures) {
             for (Map.Entry<Pair<Location, Long>, Structure> entry : spawnedStructures.entrySet()) {
-                if (entry.getKey().getLeft().getWorld().getName().equals(location.getWorld().getName())) continue;
+                if (entry.getKey().getLeft().getWorld() != location.getWorld()) continue;
 
                 double distance = entry.getKey().getLeft().distance(location);
                 if (distance < closest) closest = distance;
             }
         }
-        return struct.getStructureLocation().getDistanceFromOthers() < closest;
+
+        boolean valid = struct.getStructureLocation().getDistanceFromOthers() < closest;
+        if (valid) {
+            Bukkit.getLogger().info(struct.getName() + " Closest: " + Math.round(closest) + "(" + location.getBlockX() + ", " + location.getBlockZ() + ") (" + struct.getStructureLocation().getDistanceFromOthers() + ")");
+        }
+        return valid;
     }
 
     /**
