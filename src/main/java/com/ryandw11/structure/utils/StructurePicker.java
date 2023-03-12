@@ -12,13 +12,16 @@ import com.ryandw11.structure.structure.properties.BlockLevelLimit;
 import com.ryandw11.structure.structure.properties.StructureYSpawning;
 import com.sk89q.worldedit.WorldEditException;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Random;
 
 /**
  * This class prevents the server from crashing when it attempts to pick a
@@ -31,21 +34,39 @@ import java.util.Objects;
  */
 public class StructurePicker {
 
+    public static final Random RANDOM = new Random(System.currentTimeMillis());
+
     private final CustomStructures plugin;
 
-    private final PriorityStructureQueue priorityStructureQueue;
+    private PriorityStructureQueue priorityStructureQueue;
     private final IgnoreBlocks ignoreBlocks;
 
-    private final Block bl;
-    private final Chunk ch;
+    private final int radius;
+    private final Location center;
+    private Block bl;
+    private Chunk ch;
     // Variable that contains the structureBlock of the current structure being processed.
     private Block structureBlock;
+    private int attempts;
 
-    public StructurePicker(@Nullable Block bl, Chunk ch, CustomStructures plugin) {
+    public StructurePicker(int radius, Location center, CustomStructures plugin) {
         this.plugin = plugin;
-        this.bl = bl;
-        this.ch = ch;
+
+        this.radius = radius;
+        this.center = center;
         this.ignoreBlocks = plugin.getBlockIgnoreManager();
+
+        this.attempts = 0;
+
+        this.updateLocation();
+    }
+
+    private void updateLocation() {
+        Location location = this.getRandomLocation(center);
+
+        Chunk chunk = location.getChunk();
+        this.bl = chunk.getBlock(8, 5, 8);
+        this.ch = chunk;
 
         StructureHandler structureHandler = plugin.getStructureHandler();
         if (structureHandler == null) {
@@ -55,12 +76,19 @@ public class StructurePicker {
         }
 
         priorityStructureQueue = new PriorityStructureQueue(structureHandler.getStructures(), Objects.requireNonNull(bl), ch);
+
+        this.attempts++;
+
+        this.run();
     }
 
     public void run() {
         Structure gStructure = null;
         try {
             if (!priorityStructureQueue.hasNextStructure()) {
+                if (this.attempts > 10) return;
+
+                this.updateLocation();
                 return;
             }
 
@@ -224,7 +252,7 @@ public class StructurePicker {
                 plugin.getStructureHandler().putSpawnedStructure(structureBlock.getLocation(),
                         structure);
 
-                plugin.getServer().getLogger().info("Pasted at " + structureBlock.getLocation().getBlockX() + structureBlock.getLocation().getBlockZ());
+                plugin.getServer().getLogger().info("Pasted at " + structureBlock.getLocation().getBlockX() + ", " + structureBlock.getLocation().getBlockZ());
                 try {
                     SchematicHandler.placeSchematic(structureBlock.getLocation(),
                             structure.getSchematic(),
@@ -254,6 +282,21 @@ public class StructurePicker {
                 ex.printStackTrace();
 
         }
+    }
+
+    /**
+     * Used to a get a random location for the whole map
+     *
+     * @param center the center of the map
+     * @return a random location
+     */
+    protected Location getRandomLocation(Location center) {
+        int radius = this.radius;
+
+        int x = (RANDOM.nextBoolean() ? RANDOM.nextInt(radius) : -RANDOM.nextInt(radius));
+        int z = (RANDOM.nextBoolean() ? RANDOM.nextInt(radius) : -RANDOM.nextInt(radius));
+
+        return new Location(center.getWorld(), center.getX() + x, 0, center.getZ() + z);
     }
 
 }

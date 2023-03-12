@@ -167,11 +167,7 @@ public class StructureHandler {
             }
         }
 
-        boolean valid = struct.getStructureLocation().getDistanceFromOthers() < closest;
-        if (valid) {
-            Bukkit.getLogger().info(struct.getName() + " Closest: " + Math.round(closest) + "(" + location.getBlockX() + ", " + location.getBlockZ() + ") (" + struct.getStructureLocation().getDistanceFromOthers() + ")");
-        }
-        return valid;
+        return struct.getStructureLocation().getDistanceFromOthers() < closest;
     }
 
     /**

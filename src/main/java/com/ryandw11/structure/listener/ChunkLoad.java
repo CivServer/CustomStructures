@@ -52,13 +52,6 @@ public class ChunkLoad implements Listener {
 
         Block b = source.getBlock(8, 5, 8); //Grabs the block 8, 5, 8 in that chunk.
 
-        try {
-            StructurePicker s = new StructurePicker(b, source, CustomStructures.getInstance());
-            s.run();
-        } catch (RuntimeException ex) {
-            // ignore, error already logged.
-        }
-
         cooldown = Instant.now();
     }
 }

@@ -28,8 +28,8 @@ public class StructureBlockPopulator extends BlockPopulator {
          * This activity is done async to prevent the server from lagging.
          */
         try {
-            StructurePicker s = new StructurePicker(b, source, CustomStructures.getInstance());
-            s.run();
+/*            StructurePicker s = new StructurePicker(b, source, CustomStructures.getInstance());
+            s.run();*/
         } catch (RuntimeException ex) {
             // ignore, error already logged.
         }
