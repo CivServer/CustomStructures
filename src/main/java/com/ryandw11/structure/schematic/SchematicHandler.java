@@ -119,6 +119,8 @@ public class SchematicHandler {
             rotY = new Random().nextInt(4) * 90;
             transform = transform.rotateY(rotY);
             ch.setTransform(ch.getTransform().combine(transform));
+
+            plugin.getLogger().info("Rotation chosen for " + structure.getName() + " (" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "): " + rotY);
         } else if (iteration != 0) {
             rotY = Math.toDegrees(structure.getSubSchemRotation());
             transform = transform.rotateY(rotY);
