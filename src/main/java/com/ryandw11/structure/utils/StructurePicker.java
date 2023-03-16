@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 /**
  * This class prevents the server from crashing when it attempts to pick a
@@ -86,8 +87,12 @@ public class StructurePicker {
         Structure gStructure = null;
         try {
             if (!priorityStructureQueue.hasNextStructure()) {
-                if (this.attempts > 10) return;
+                if (this.attempts > 10) {
+                    plugin.getLogger().info("More than 10 attempts. Stopping spawning for this structure.");
+                    return;
+                }
 
+//                plugin.getLogger().info("Location failed, checking next.");
                 this.updateLocation();
                 return;
             }
@@ -146,12 +151,15 @@ public class StructurePicker {
             }
 
             if (!structure.getStructureLimitations().hasWhitelistBlock(structureBlock)) {
+                Location location = structureBlock.getLocation();
+                plugin.getLogger().info(structure.getName() + " Location failed bc of whitelist. Does not allow spawning on " + structureBlock.getType() + " (" + location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + ")");
                 this.run();
                 return;
             }
 
             if (structure.getStructureLimitations().hasBlacklistBlock(structureBlock)) {
                 this.run();
+//                plugin.getLogger().info(structure.getName() + " Location failed bc of blacklist");
                 return;
             }
 
@@ -159,6 +167,7 @@ public class StructurePicker {
             if (!structure.getStructureProperties().canSpawnInWater()) {
                 if (structureBlock.getType() == Material.WATER) {
                     this.run();
+//                    plugin.getLogger().info(structure.getName() + " Location failed bc of water");
                     return;
                 }
             }
@@ -167,6 +176,7 @@ public class StructurePicker {
             if (!structure.getStructureProperties().canSpawnInLavaLakes()) {
                 if (structureBlock.getType() == Material.LAVA) {
                     this.run();
+//                    plugin.getLogger().info(structure.getName() + " Location failed bc of lava");
                     return;
                 }
             }
@@ -180,6 +190,7 @@ public class StructurePicker {
             if (structure.getStructureLimitations().getWorldHeightRestriction() != -1 &&
                     structureBlock.getLocation().getY() > ch.getWorld().getMaxHeight() - structure.getStructureLimitations().getWorldHeightRestriction()) {
                 this.run();
+//                plugin.getLogger().info(structure.getName() + " Location failed bc of height");
                 return;
             }
 
@@ -216,6 +227,7 @@ public class StructurePicker {
 
                     if (((double) error / total) > limit.getError()) {
                         this.run();
+//                        plugin.getLogger().info(structure.getName() + " Location failed bc of flat_error");
                         return;
                     }
                 }
@@ -253,6 +265,13 @@ public class StructurePicker {
                         structure);
 
                 plugin.getServer().getLogger().info("Pasted at " + structureBlock.getLocation().getBlockX() + ", " + structureBlock.getLocation().getBlockZ());
+                //<schematic name> was pasted at <x,y,z> on <block pasted> in <biome key>. Parameters: <list of possible biomes>, <whitelisted spawn blocks>
+
+                Location location = structureBlock.getLocation();
+                plugin.getLogger().info(structure.getName() + " was pasted at " + location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + " on " + structureBlock.getType().name() + "" +
+                        " in " + structureBlock.getBiome().name() + ". Parameters: " + String.join(", ", structure.getStructureLocation().getBiomes()) + ", "
+                 + String.join(", ", structure.getStructureLimitations().getWhitelistBlocks()));
+
                 try {
                     SchematicHandler.placeSchematic(structureBlock.getLocation(),
                             structure.getSchematic(),
@@ -291,12 +310,12 @@ public class StructurePicker {
      * @return a random location
      */
     protected Location getRandomLocation(Location center) {
-        int radius = this.radius;
+        int radius = this.radius / 2;
 
         int x = (RANDOM.nextBoolean() ? RANDOM.nextInt(radius) : -RANDOM.nextInt(radius));
         int z = (RANDOM.nextBoolean() ? RANDOM.nextInt(radius) : -RANDOM.nextInt(radius));
 
-        return new Location(center.getWorld(), center.getX() + x, 0, center.getZ() + z);
+        return new Location(center.getWorld(), x, 0, z);
     }
 
 }

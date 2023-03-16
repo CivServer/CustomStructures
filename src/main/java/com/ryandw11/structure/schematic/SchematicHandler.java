@@ -113,6 +113,8 @@ public class SchematicHandler {
         double rotY = Math.toDegrees(structure.getBaseRotation());
 
         // If random rotation is enabled, rotate the clipboard
+
+        plugin.getLogger().info("Random Rotation for " + structure.getName() + "? " + structure.getStructureProperties().isRandomRotation() + " - Iterations: " + iteration);
         if (structure.getStructureProperties().isRandomRotation() && iteration == 0) {
             rotY = new Random().nextInt(4) * 90;
             transform = transform.rotateY(rotY);

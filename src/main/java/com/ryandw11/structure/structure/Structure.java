@@ -263,6 +263,7 @@ public class Structure {
      * @return If the structure can spawn
      */
     public boolean canSpawn(@Nullable Block block, @NotNull Chunk chunk) {
+
         // Check to see if the structure can spawn in the current world.
         if (!getStructureLocation().getWorlds().isEmpty()) {
             if (!getStructureLocation().getWorlds().contains(chunk.getWorld().getName()))
@@ -278,24 +279,31 @@ public class Structure {
             return getStructureLocation().hasBiome(chunk.getBlock(0, 20, 0).getBiome());
         }
 
+        if (!getStructureLocation().hasBiome(block.getBiome())) {
+            Bukkit.getLogger().info(this.name + " failed biome check: " + block.getBiome().name());
+            return false;
+        }
+
         // Check to see if the structure is far enough away from spawn.
         if (Math.abs(block.getX()) < getStructureLocation().getXLimitation()) {
+            Bukkit.getLogger().info("Location failed bc of xlimit");
             return false;
         }
         if (Math.abs(block.getZ()) < getStructureLocation().getZLimitation()) {
+            Bukkit.getLogger().info("Location failed bc of zlimit");
             return false;
         }
 
         if (!CustomStructures.getInstance().getStructureHandler().validDistance(this, block.getLocation())) {
+            Bukkit.getLogger().info("Location failed bc of distance");
             return false;
         }
 
-        if (!CustomStructures.getInstance().getStructureHandler().validSameDistance(this, block.getLocation())) {
-            return false;
-        }
+        boolean samDist = CustomStructures.getInstance().getStructureHandler().validSameDistance(this, block.getLocation());
+        if (!samDist) Bukkit.getLogger().info("Location failed bc of same distance");
 
         // Check to see if the structure can spawn in the current biome.
-        return getStructureLocation().hasBiome(block.getBiome());
+        return samDist;
     }
 
     /**
