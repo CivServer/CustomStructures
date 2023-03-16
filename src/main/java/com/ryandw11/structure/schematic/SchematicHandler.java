@@ -156,6 +156,10 @@ public class SchematicHandler {
             if (plugin.getConfig().getBoolean("debug")) {
                 plugin.getLogger().info(String.format("(%s) Created an instance of %s at %s, %s, %s with rotation %s", loc.getWorld().getName(), filename, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), rotY));
             }
+
+            plugin.getLogger().info(structure.getName() + " was pasted at " + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + " on " + loc.getBlock().getType().name() + "" +
+                    " in " + loc.getBlock().getBiome().name() + ". Rotation: " + rotY + ". Parameters: " + String.join(", ", structure.getStructureLocation().getBiomes()) + ", "
+                    + String.join(", ", structure.getStructureLimitations().getWhitelistBlocks()));
         }
 
         // If enabled, perform a bottom space fill.

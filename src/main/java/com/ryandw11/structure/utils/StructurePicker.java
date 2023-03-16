@@ -264,14 +264,6 @@ public class StructurePicker {
                 plugin.getStructureHandler().putSpawnedStructure(structureBlock.getLocation(),
                         structure);
 
-                plugin.getServer().getLogger().info("Pasted at " + structureBlock.getLocation().getBlockX() + ", " + structureBlock.getLocation().getBlockZ());
-                //<schematic name> was pasted at <x,y,z> on <block pasted> in <biome key>. Parameters: <list of possible biomes>, <whitelisted spawn blocks>
-
-                Location location = structureBlock.getLocation();
-                plugin.getLogger().info(structure.getName() + " was pasted at " + location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + " on " + structureBlock.getType().name() + "" +
-                        " in " + structureBlock.getBiome().name() + ". Parameters: " + String.join(", ", structure.getStructureLocation().getBiomes()) + ", "
-                 + String.join(", ", structure.getStructureLimitations().getWhitelistBlocks()));
-
                 try {
                     SchematicHandler.placeSchematic(structureBlock.getLocation(),
                             structure.getSchematic(),
