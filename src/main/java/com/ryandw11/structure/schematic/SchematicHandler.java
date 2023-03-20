@@ -114,13 +114,13 @@ public class SchematicHandler {
 
         // If random rotation is enabled, rotate the clipboard
 
-        plugin.getLogger().info("Random Rotation for " + structure.getName() + "? " + structure.getStructureProperties().isRandomRotation() + " - Iterations: " + iteration);
+//        plugin.getLogger().info("Random Rotation for " + structure.getName() + "? " + structure.getStructureProperties().isRandomRotation() + " - Iterations: " + iteration);
         if (structure.getStructureProperties().isRandomRotation() && iteration == 0) {
             rotY = new Random().nextInt(4) * 90;
             transform = transform.rotateY(rotY);
             ch.setTransform(ch.getTransform().combine(transform));
 
-            plugin.getLogger().info("Rotation chosen for " + structure.getName() + " (" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "): " + rotY);
+//            plugin.getLogger().info("Rotation chosen for " + structure.getName() + " (" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "): " + rotY);
         } else if (iteration != 0) {
             rotY = Math.toDegrees(structure.getSubSchemRotation());
             transform = transform.rotateY(rotY);
@@ -148,6 +148,9 @@ public class SchematicHandler {
             }
             editSession.setMask(targetMask);
 
+            int y = loc.getWorld().getHighestBlockYAt(loc.getBlockX(), loc.getBlockZ());
+            plugin.getLogger().info(structure.getName() + " (" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + ") Highest Y: " + y);
+
             Operation operation = ch.createPaste(editSession)
                     .to(BlockVector3.at(loc.getX(), loc.getY(), loc.getZ())).maskSource(sourceMask).ignoreAirBlocks(!useAir).build();
 
@@ -157,9 +160,7 @@ public class SchematicHandler {
                 plugin.getLogger().info(String.format("(%s) Created an instance of %s at %s, %s, %s with rotation %s", loc.getWorld().getName(), filename, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), rotY));
             }
 
-            plugin.getLogger().info(structure.getName() + " was pasted at " + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + " on " + loc.getBlock().getType().name() + "" +
-                    " in " + loc.getBlock().getBiome().name() + ". Rotation: " + rotY + ". Parameters: " + String.join(", ", structure.getStructureLocation().getBiomes()) + ", "
-                    + String.join(", ", structure.getStructureLimitations().getWhitelistBlocks()));
+            plugin.getLogger().info(structure.getName() + " was pasted with Rotation: " + rotY + ".");
         }
 
         // If enabled, perform a bottom space fill.

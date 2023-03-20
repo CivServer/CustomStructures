@@ -1,6 +1,7 @@
 package com.ryandw11.structure.structure.properties;
 
 import com.ryandw11.structure.exceptions.StructureConfigurationException;
+import org.bukkit.Bukkit;
 import org.bukkit.HeightMap;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -148,7 +149,10 @@ public class StructureYSpawning {
             currentHeight = Objects.requireNonNull(location.getWorld()).getHighestBlockYAt(location, heightMap);
         }
 
-        if (top) return currentHeight;
+        if (top) {
+//            Bukkit.getLogger().info(location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + ") Highest Y: " + currentHeight + " - top");
+            return currentHeight;
+        }
         // If it is a range
         if (value.contains(";")) {
             //If +[num;num]
@@ -210,8 +214,10 @@ public class StructureYSpawning {
             String v = value.replace("+", "").replace("[", "").replace("]", "");
             try {
                 int num = Integer.parseInt(v);
+//                Bukkit.getLogger().info(location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + ") Highest Y: " + currentHeight + " | +" + num);
                 return currentHeight + num;
             } catch (NumberFormatException ex) {
+                ex.printStackTrace();
                 return currentHeight;
             }
         }
@@ -221,6 +227,7 @@ public class StructureYSpawning {
 
             try {
                 int num = Integer.parseInt(v);
+//                Bukkit.getLogger().info(location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + ") Highest Y: " + currentHeight + " | -" + num);
                 return currentHeight - num;
             } catch (NumberFormatException ex) {
                 return currentHeight;

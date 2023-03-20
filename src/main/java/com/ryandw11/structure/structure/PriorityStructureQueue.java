@@ -3,13 +3,18 @@ package com.ryandw11.structure.structure;
 import com.ryandw11.structure.structure.properties.StructureYSpawning;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.TreeSet;
 
 /**
@@ -17,7 +22,7 @@ import java.util.TreeSet;
  */
 public class PriorityStructureQueue {
 
-    private final TreeSet<PriorityStructure> priorityStructureSet;
+    private final List<PriorityStructure> priorityStructureSet;
 
     /**
      * Create a priority queue of structures for a specific spawn location.
@@ -29,13 +34,17 @@ public class PriorityStructureQueue {
      * @param chunk      The chunk to test the spawn conditions for.
      */
     public PriorityStructureQueue(@NotNull List<Structure> structures, @NotNull Block block, @NotNull Chunk chunk) {
-        priorityStructureSet = new TreeSet<>();
+        priorityStructureSet = new ArrayList<>();
 
         for (Structure structure : structures) {
             StructureYSpawning structureSpawnSettings = structure.getStructureLocation().getSpawnSettings();
 
             // Get the highest block according to the settings for the structure.
             Block structureBlock = structureSpawnSettings.getHighestBlock(block.getLocation());
+            int height = structureSpawnSettings.getHeight(structureBlock.getLocation());
+
+            structureBlock = new Location(block.getWorld(), structureBlock.getX(), height, structureBlock.getZ()).getBlock();
+
             if (structureBlock.getType() == Material.VOID_AIR) {
                 structureBlock = null;
             }
@@ -44,6 +53,8 @@ public class PriorityStructureQueue {
                 priorityStructureSet.add(new PriorityStructure(structure));
             }
         }
+
+        Collections.shuffle(this.priorityStructureSet);
     }
 
     /**
@@ -62,11 +73,11 @@ public class PriorityStructureQueue {
      */
     @Nullable
     public Structure getNextStructure() {
-        if (priorityStructureSet.isEmpty()) {
-            return null;
-        }
+        if (priorityStructureSet.isEmpty()) return null;
 
-        return Objects.requireNonNull(priorityStructureSet.pollFirst()).getStructure();
+        Collections.shuffle(this.priorityStructureSet);
+
+        return Objects.requireNonNull(priorityStructureSet.remove(0)).getStructure();
     }
 
     /**

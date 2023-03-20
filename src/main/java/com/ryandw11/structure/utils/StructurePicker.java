@@ -14,15 +14,11 @@ import com.sk89q.worldedit.WorldEditException;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 /**
  * This class prevents the server from crashing when it attempts to pick a
@@ -47,13 +43,13 @@ public class StructurePicker {
     private Block bl;
     private Chunk ch;
     // Variable that contains the structureBlock of the current structure being processed.
-    private Block structureBlock;
+    private Block structureBlock, cachedStructureBlock;
     private int attempts;
 
     public StructurePicker(int radius, Location center, CustomStructures plugin) {
         this.plugin = plugin;
 
-        this.radius = radius;
+        this.radius = radius / 2;
         this.center = center;
         this.ignoreBlocks = plugin.getBlockIgnoreManager();
 
@@ -93,6 +89,8 @@ public class StructurePicker {
                 }
 
 //                plugin.getLogger().info("Location failed, checking next.");
+
+                cachedStructureBlock = null;
                 this.updateLocation();
                 return;
             }
@@ -103,8 +101,10 @@ public class StructurePicker {
             assert structure != null;
             StructureYSpawning structureSpawnSettings = structure.getStructureLocation().getSpawnSettings();
 
-            // Get the highest block according to the settings for the structure.
+//            plugin.getLogger().info("Starting checks for " + structure.getName());
             structureBlock = structureSpawnSettings.getHighestBlock(bl.getLocation());
+
+            this.pasteLocation(1, structure, structureBlock.getLocation());
 
             // If the block is the void, then set it to null to maintain compatibility.
             if (structureBlock.getType() == Material.VOID_AIR) {
@@ -139,20 +139,22 @@ public class StructurePicker {
                 for (int i = structureBlock.getY(); i >= 4; i--) {
                     if (!ignoreBlocks.getBlocks().contains(ch.getBlock(8, i, 8).getType()) && !ch.getBlock(8, i, 8).getType().isAir()) {
                         structureBlock = ch.getBlock(8, i, 8);
-                        this.run();
+                        this.pasteLocation(2, structure, structureBlock.getLocation());
                         break;
                     }
                 }
             }
 
+            this.pasteLocation(3, structure, structureBlock.getLocation());
+
             // calculate SpawnY if first is true
             if (structureSpawnSettings.isCalculateSpawnYFirst()) {
-                structureBlock = ch.getBlock(8, structureSpawnSettings.getHeight(structureBlock.getLocation()), 8);
+                structureBlock = new Location(structureBlock.getWorld(), structureBlock.getX(), structureSpawnSettings.getHeight(structureBlock.getLocation()), structureBlock.getZ()).getBlock();
             }
 
             if (!structure.getStructureLimitations().hasWhitelistBlock(structureBlock)) {
                 Location location = structureBlock.getLocation();
-                plugin.getLogger().info(structure.getName() + " Location failed bc of whitelist. Does not allow spawning on " + structureBlock.getType() + " (" + location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + ")");
+//                plugin.getLogger().info(structure.getName() + " Location failed bc of whitelist. Does not allow spawning on " + structureBlock.getType() + " (" + location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + ")");
                 this.run();
                 return;
             }
@@ -186,6 +188,8 @@ public class StructurePicker {
                 structureBlock = ch.getBlock(8, structureSpawnSettings.getHeight(structureBlock.getLocation()), 8);
             }
 
+            this.pasteLocation(4, structure, structureBlock.getLocation());
+
             // If the structure is going to be cut off by the world height limit, pick a new structure.
             if (structure.getStructureLimitations().getWorldHeightRestriction() != -1 &&
                     structureBlock.getLocation().getY() > ch.getWorld().getMaxHeight() - structure.getStructureLimitations().getWorldHeightRestriction()) {
@@ -194,7 +198,7 @@ public class StructurePicker {
                 return;
             }
 
-                // If the structure can follows block level limit.
+            // If the structure can follows block level limit.
             // This only triggers if it spawns on the top.
             if (structure.getStructureLimitations().getBlockLevelLimit().isEnabled()) {
                 BlockLevelLimit limit = structure.getStructureLimitations().getBlockLevelLimit();
@@ -252,27 +256,27 @@ public class StructurePicker {
                 }
             }
 
-            // Now to finally paste the schematic
-            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-                // It is assumed at this point that the structure has been spawned.
-                // Add it to the list of spawned structures.
+            // It is assumed at this point that the structure has been spawned.
+            // Add it to the list of spawned structures.
 
-                if (!CustomStructures.getInstance().getStructureHandler().validDistance(structure, structureBlock.getLocation())) {
-                    return;
-                }
+            if (!CustomStructures.getInstance().getStructureHandler().validDistance(structure, structureBlock.getLocation())) {
+                this.run();
+                return;
+            }
 
-                plugin.getStructureHandler().putSpawnedStructure(structureBlock.getLocation(),
+            plugin.getStructureHandler().putSpawnedStructure(structureBlock.getLocation(),
+                    structure);
+
+            this.pasteLocation(5, structure, structureBlock.getLocation());
+
+            try {
+                SchematicHandler.placeSchematic(structureBlock.getLocation(),
+                        structure.getSchematic(),
+                        structure.getStructureProperties().canPlaceAir(),
                         structure);
-
-                try {
-                    SchematicHandler.placeSchematic(structureBlock.getLocation(),
-                            structure.getSchematic(),
-                            structure.getStructureProperties().canPlaceAir(),
-                            structure);
-                } catch (IOException | WorldEditException e) {
-                    e.printStackTrace();
-                }
-            });
+            } catch (IOException | WorldEditException e) {
+                e.printStackTrace();
+            }
 
         } catch (StructureConfigurationException ex) {
 
@@ -302,12 +306,15 @@ public class StructurePicker {
      * @return a random location
      */
     protected Location getRandomLocation(Location center) {
-        int radius = this.radius / 2;
-
         int x = (RANDOM.nextBoolean() ? RANDOM.nextInt(radius) : -RANDOM.nextInt(radius));
         int z = (RANDOM.nextBoolean() ? RANDOM.nextInt(radius) : -RANDOM.nextInt(radius));
 
         return new Location(center.getWorld(), x, 0, z);
+    }
+
+    private void pasteLocation(int id, Structure structure, Location loc) {
+//        int y = loc.getWorld().getHighestBlockYAt(loc.getBlockX(), loc.getBlockZ());
+//        plugin.getLogger().info(id + ": " + structure.getName() + " (" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + ") Highest Y: " + y);
     }
 
 }

@@ -295,12 +295,12 @@ public class Structure {
         }
 
         if (!CustomStructures.getInstance().getStructureHandler().validDistance(this, block.getLocation())) {
-            Bukkit.getLogger().info("Location failed bc of distance");
+//            Bukkit.getLogger().info("Location failed bc of distance");
             return false;
         }
 
         boolean samDist = CustomStructures.getInstance().getStructureHandler().validSameDistance(this, block.getLocation());
-        if (!samDist) Bukkit.getLogger().info("Location failed bc of same distance");
+//        if (!samDist) Bukkit.getLogger().info("Location failed bc of ?same distance");
 
         // Check to see if the structure can spawn in the current biome.
         return samDist;
