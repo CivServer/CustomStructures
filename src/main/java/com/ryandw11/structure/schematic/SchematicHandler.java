@@ -117,8 +117,8 @@ public class SchematicHandler {
 //        plugin.getLogger().info("Random Rotation for " + structure.getName() + "? " + structure.getStructureProperties().isRandomRotation() + " - Iterations: " + iteration);
         if (structure.getStructureProperties().isRandomRotation() && iteration == 0) {
             rotY = new Random().nextInt(4) * 90;
-            transform = transform.rotateY(rotY);
-            ch.setTransform(ch.getTransform().combine(transform));
+
+            ch.setTransform(new AffineTransform().rotateY(rotY));
 
 //            plugin.getLogger().info("Rotation chosen for " + structure.getName() + " (" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "): " + rotY);
         } else if (iteration != 0) {
@@ -227,8 +227,8 @@ public class SchematicHandler {
 
             // Call the event for use by other plugins (only if it is the first iteration though.)
             if (iteration < 1) {
-                StructureSpawnHolder structureSpawnHolder = new StructureSpawnHolder(SchematicLocationUtils.getMinimumLocation(clipboard, loc, 0),
-                        SchematicLocationUtils.getMaximumLocation(clipboard, loc, 0), containersAndSignsLocations);
+                StructureSpawnHolder structureSpawnHolder = new StructureSpawnHolder(SchematicLocationUtils.getMinimumLocation(clipboard, loc, finalRotY),
+                        SchematicLocationUtils.getMaximumLocation(clipboard, loc, finalRotY), containersAndSignsLocations);
                 StructureSpawnEvent structureSpawnEvent = new StructureSpawnEvent(structure, loc, finalRotY, structureSpawnHolder);
                 Bukkit.getServer().getPluginManager().callEvent(structureSpawnEvent);
             }
