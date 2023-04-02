@@ -241,7 +241,10 @@ public class StructurePicker {
                 // Check if the structure can spawn according to the section.
                 // If an error occurs, report it to the user.
                 try {
-                    if (!section.checkStructureConditions(structure, structureBlock, ch)) return;
+//                    plugin.getLogger().info("Custom Structures Check For: " + structure.getName() + " - " + section.getName());
+                    if (!section.checkStructureConditions(structure, structureBlock, ch)) {
+                        return;
+                    }
                 } catch (Exception ex) {
                     plugin.getLogger().severe(String.format("[CS Addon] An error has occurred when attempting to spawn " +
                             "the structure %s with the custom property %s!", structure.getName(), section.getName()));

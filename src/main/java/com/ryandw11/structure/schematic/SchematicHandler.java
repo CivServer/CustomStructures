@@ -149,7 +149,6 @@ public class SchematicHandler {
             editSession.setMask(targetMask);
 
             int y = loc.getWorld().getHighestBlockYAt(loc.getBlockX(), loc.getBlockZ());
-            plugin.getLogger().info(structure.getName() + " (" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + ") Highest Y: " + y);
 
             Operation operation = ch.createPaste(editSession)
                     .to(BlockVector3.at(loc.getX(), loc.getY(), loc.getZ())).maskSource(sourceMask).ignoreAirBlocks(!useAir).build();

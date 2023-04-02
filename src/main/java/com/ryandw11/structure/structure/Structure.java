@@ -286,11 +286,9 @@ public class Structure {
 
         // Check to see if the structure is far enough away from spawn.
         if (Math.abs(block.getX()) < getStructureLocation().getXLimitation()) {
-            Bukkit.getLogger().info("Location failed bc of xlimit");
             return false;
         }
         if (Math.abs(block.getZ()) < getStructureLocation().getZLimitation()) {
-            Bukkit.getLogger().info("Location failed bc of zlimit");
             return false;
         }
 
