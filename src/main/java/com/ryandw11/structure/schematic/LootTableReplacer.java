@@ -11,13 +11,16 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
 import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.loot.LootTables;
 
+import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -84,10 +87,43 @@ public class LootTableReplacer {
             } else if ((lootTable.getTypes().contains(blockType) || explictLoottableDefined) && containerInventory instanceof BrewerInventory) {
                 lootTable.fillBrewerInventory((BrewerInventory) containerInventory, random, container.getLocation());
             } else if (lootTable.getTypes().contains(blockType) || explictLoottableDefined) {
-                lootTable.fillContainerInventory(containerInventory, random, container.getLocation());
+               // lootTable.fillContainerInventory(containerInventory, random, container.getLocation());
+                Chest chest = (Chest) block.getState();
+                chest.setLootTable(randomizeLootTable());
+                chest.update();
             }
         }
 
+    }
+
+    static HashMap<String,Integer> tables = new HashMap<>() {{
+        //put("BURIED_TREASURE",10);
+        put("DESERT_PYRAMID",10);
+        put("PILLAGER_OUTPOST",10);
+        put("RUINED_PORTAL",5);
+        put("SIMPLE_DUNGEON",10);
+        put("STRONGHOLD_LIBRARY",5);
+        put("WOODLAND_MANSION",5);
+        //put("END_CITY_TREASURE",1);
+    }};
+
+    public static org.bukkit.loot.LootTable randomizeLootTable()
+    {
+        double completeWeight = 0.0;
+
+        for (int w : tables.values())
+            completeWeight += w;
+
+        double r = Math.random() * completeWeight;
+        double countWeight = 0.0;
+        for (String table : tables.keySet())
+        {
+            countWeight += tables.get(table);
+            if (countWeight >= r)
+                return LootTables.valueOf(table).getLootTable();
+
+        }
+        return LootTables.END_CITY_TREASURE.getLootTable();
     }
 
     /**
