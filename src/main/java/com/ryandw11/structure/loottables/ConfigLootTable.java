@@ -142,8 +142,15 @@ public class ConfigLootTable extends LootTable {
      */
     private void loadFile(String name) {
         File lootTablesfile = new File(CustomStructures.plugin.getDataFolder() + "/lootTables/" + name + ".yml");
+                /*
+        Switched to defaulting to generic loot table because this fork no longer actually uses loot table configs
+         */
         if (!lootTablesfile.exists())
-            throw new LootTableException("Cannot find the following loot table file: " + name);
+        {
+            lootTablesfile = new File(CustomStructures.plugin.getDataFolder() + "/lootTables/lootTable.yml");
+            if (!lootTablesfile.exists())
+                throw new LootTableException("Cannot find the following loot table file or load a default: " + name);
+        }
         this.lootTablesFC = YamlConfiguration.loadConfiguration(lootTablesfile);
 
         try {
