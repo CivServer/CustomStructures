@@ -21,6 +21,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.loot.LootTables;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Random;
 
 /**
@@ -72,6 +73,21 @@ public class LootTableReplacer {
             lootTable = tables.next();
         }
 
+        try
+        {
+            Chest chest = (Chest) block.getState();
+            chest.setLootTable(LootTables.valueOf(lootTable.getName()).getLootTable());
+            chest.update();
+        }
+        catch(Exception ex) // Catch if loot table was mistyped
+        {
+            Chest chest = (Chest) block.getState();
+            chest.setLootTable(LootTables.VILLAGE_PLAINS_HOUSE.getLootTable());
+            chest.update();
+            CustomStructures.getInstance().getLogger().severe("A LootTable has been incorrectly configured: "+lootTable.getName());
+            CustomStructures.getInstance().getLogger().severe("Default Plains Village loot table was loaded instead.");
+        }
+/*
         Random random = new Random();
 
         // Trigger the loot populate event.
@@ -83,16 +99,18 @@ public class LootTableReplacer {
         // TODO: This is not a good method, should try to pick another loot table if failed.
         for (int i = 0; i < lootTable.getRolls(); i++) {
             if ((lootTable.getTypes().contains(blockType) || explictLoottableDefined) && containerInventory instanceof FurnaceInventory) {
-                lootTable.fillFurnaceInventory((FurnaceInventory) containerInventory, random, container.getLocation());
+                //lootTable.fillFurnaceInventory((FurnaceInventory) containerInventory, random, container.getLocation());
             } else if ((lootTable.getTypes().contains(blockType) || explictLoottableDefined) && containerInventory instanceof BrewerInventory) {
-                lootTable.fillBrewerInventory((BrewerInventory) containerInventory, random, container.getLocation());
+                //lootTable.fillBrewerInventory((BrewerInventory) containerInventory, random, container.getLocation());
             } else if (lootTable.getTypes().contains(blockType) || explictLoottableDefined) {
-               // lootTable.fillContainerInventory(containerInventory, random, container.getLocation());
+                lootTable.fillContainerInventory(containerInventory, random, container.getLocation());
                 Chest chest = (Chest) block.getState();
                 chest.setLootTable(randomizeLootTable());
                 chest.update();
             }
         }
+
+ */
 
     }
 
@@ -123,7 +141,7 @@ public class LootTableReplacer {
                 return LootTables.valueOf(table).getLootTable();
 
         }
-        return LootTables.END_CITY_TREASURE.getLootTable();
+        return LootTables.VILLAGE_PLAINS_HOUSE.getLootTable();
     }
 
     /**
