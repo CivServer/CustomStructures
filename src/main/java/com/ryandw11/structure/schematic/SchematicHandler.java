@@ -156,7 +156,7 @@ public class SchematicHandler {
             Operations.complete(operation);
 
             if (plugin.getConfig().getBoolean("debug")) {
-                plugin.getLogger().info(String.format("(%s) Created an instance of %s at %s, %s, %s with rotation %s", loc.getWorld().getName(), filename, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), rotY));
+                plugin.getLogger().info(String.format("(%s) Created an instance of %s at %s %s %s with rotation %s", loc.getWorld().getName(), filename, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), rotY));
             }
 
             plugin.getLogger().info(structure.getName() + " was pasted with Rotation: " + rotY + ".");
