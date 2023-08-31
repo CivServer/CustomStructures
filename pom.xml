@@ -10,6 +10,7 @@
     <version>1.0.0-hoplite-fork</version>
 
     <build>
+        <finalName>CustomStructures</finalName>
         <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>
 
